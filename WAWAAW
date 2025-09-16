@@ -7264,8 +7264,143 @@ ToggleButton.MouseButton1Click:Connect(function()
 end)
 end)
 
-addMainMenuButton("[3KTG]", function()
-	
+addMainMenuButton("LASPINAS SYSTEM [3KTG]", function()
+	--// Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+--// GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "GiveAllCashGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Position = UDim2.new(0.5, -130, 0.5, -160)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 1
+frame.BorderColor3 = Color3.fromRGB(40, 40, 40)
+frame.Parent = gui
+frame.Active = true
+frame.Draggable = true
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.Text = "LAS PINAS ROLEPLAY"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = frame
+Instance.new("UICorner", title).CornerRadius = UDim.new(0, 8)
+
+-- List of items to buy
+local items = {
+    {"Silenced Pistol", "Silenced Pistol"},
+    {"Heavy Vest", "Heavy Vest"},
+    {"Glock-19", "Glock-19"},
+    {"Oxy", "Oxy"},
+    {"Vector", "Vector"},
+    {"Tail", "Tail"},
+    {"AmmoBox", "AmmoBox"}
+}
+
+local selectedItem = nil
+
+-- Dropdown Button
+local dropdown = Instance.new("TextButton")
+dropdown.Size = UDim2.new(1, -20, 0, 30)
+dropdown.Position = UDim2.new(0, 10, 0, 50)
+dropdown.Text = "Select Item"
+dropdown.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+dropdown.TextColor3 = Color3.new(1, 1, 1)
+dropdown.Font = Enum.Font.Gotham
+dropdown.TextSize = 14
+dropdown.Parent = frame
+Instance.new("UICorner", dropdown).CornerRadius = UDim.new(0, 6)
+
+-- Dropdown Frame
+local itemHeight = 28
+local dropdownHeight = #items * itemHeight
+local dropdownFrame = Instance.new("Frame")
+dropdownFrame.Size = UDim2.new(1, -20, 0, dropdownHeight)
+dropdownFrame.Position = UDim2.new(0, 10, 0, 85)
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+dropdownFrame.Visible = false
+dropdownFrame.Parent = frame
+Instance.new("UICorner", dropdownFrame).CornerRadius = UDim.new(0, 5)
+
+-- Dropdown Buttons
+for i, item in ipairs(items) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, itemHeight)
+    btn.Position = UDim2.new(0, 0, 0, (i - 1) * itemHeight)
+    btn.Text = item[1]
+    btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 12
+    btn.Parent = dropdownFrame
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
+
+    btn.MouseButton1Click:Connect(function()
+        selectedItem = item[2]
+        dropdown.Text = item[1]
+        dropdownFrame.Visible = false
+    end)
+end
+
+-- Toggle Dropdown
+dropdown.MouseButton1Click:Connect(function()
+    dropdownFrame.Visible = not dropdownFrame.Visible
+end)
+
+-- Auto Buy Button
+local toggle = Instance.new("TextButton")
+toggle.Size = UDim2.new(1, -20, 0, 35)
+toggle.Position = UDim2.new(0, 10, 0, 100 + dropdownHeight)
+toggle.Text = "Start Auto Buy"
+toggle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggle.TextColor3 = Color3.new(1, 1, 1)
+toggle.Font = Enum.Font.GothamBold
+toggle.TextSize = 14
+toggle.Parent = frame
+Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 6)
+
+-- Auto adjust frame height
+local padding = 140 -- title + spacing + toggle
+local frameHeight = padding + dropdownHeight
+frame.Size = UDim2.new(0, 260, 0, frameHeight)
+
+-- Auto Buy Logic
+local isAutoBuying = false
+toggle.MouseButton1Click:Connect(function()
+    isAutoBuying = not isAutoBuying
+    toggle.Text = isAutoBuying and "Stop Auto Buy" or "Start Auto Buy"
+    
+    while isAutoBuying do
+        if selectedItem then
+            ReplicatedStorage.ShopRemotes["BuyItem_27d2b386-7ee0-4909-94f2-f2968b040bd7"]:FireServer(selectedItem, -100000)
+            print("Auto-buying " .. selectedItem)
+        end
+        task.wait(0.001)
+    end
+end)
+
+-- RightShift toggle GUI
+UIS.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
+        gui.Enabled = not gui.Enabled
+    end
+end)
 end)
 
 -- Particle Snow Effect inside main GUI
