@@ -7548,7 +7548,7 @@ ExecTitle.TextSize = 16
 ExecTitle.Parent = ExecutorPage
 
 local ScriptBox = Instance.new("TextBox")
-ScriptBox.Size = UDim2.new(1, -20, 1, -90)
+ScriptBox.Size = UDim2.new(1, -20, 1, -130) -- Adjusted height for OutputLabel
 ScriptBox.Position = UDim2.new(0, 10, 0, 40)
 ScriptBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 ScriptBox.Text = "-- Paste your Lua script here"
@@ -7557,11 +7557,27 @@ ScriptBox.ClearTextOnFocus = false
 ScriptBox.TextXAlignment = Enum.TextXAlignment.Left
 ScriptBox.TextYAlignment = Enum.TextYAlignment.Top
 ScriptBox.MultiLine = true
+ScriptBox.TextWrapped = true -- Wrap long lines
 ScriptBox.Font = Enum.Font.Code
 ScriptBox.TextSize = 14
 ScriptBox.Parent = ExecutorPage
 local ScriptCorner = Instance.new("UICorner", ScriptBox)
-ScriptCorner.CornerRadius = UDim.new(0,6)
+ScriptCorner.CornerRadius = UDim.new(0, 6)
+
+-- Output Label to show execution results
+local OutputLabel = Instance.new("TextLabel")
+OutputLabel.Size = UDim2.new(1, -20, 0, 40)
+OutputLabel.Position = UDim2.new(0, 10, 1, -84)
+OutputLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+OutputLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+OutputLabel.BackgroundTransparency = 0
+OutputLabel.Font = Enum.Font.Gotham
+OutputLabel.TextSize = 12
+OutputLabel.TextWrapped = true -- Wrap long output
+OutputLabel.Text = "Output: Ready"
+OutputLabel.Parent = ExecutorPage
+local OutputCorner = Instance.new("UICorner", OutputLabel)
+OutputCorner.CornerRadius = UDim.new(0, 6)
 
 local ExecBtn = Instance.new("TextButton")
 ExecBtn.Size = UDim2.new(0, 120, 0, 32)
@@ -7573,7 +7589,7 @@ ExecBtn.Font = Enum.Font.GothamBold
 ExecBtn.TextSize = 14
 ExecBtn.Parent = ExecutorPage
 local ExecCorner = Instance.new("UICorner", ExecBtn)
-ExecCorner.CornerRadius = UDim.new(0,6)
+ExecCorner.CornerRadius = UDim.new(0, 6)
 
 local ClearBtn = Instance.new("TextButton")
 ClearBtn.Size = UDim2.new(0, 120, 0, 32)
@@ -7585,25 +7601,31 @@ ClearBtn.Font = Enum.Font.GothamBold
 ClearBtn.TextSize = 14
 ClearBtn.Parent = ExecutorPage
 local ClearCorner = Instance.new("UICorner", ClearBtn)
-ClearCorner.CornerRadius = UDim.new(0,6)
+ClearCorner.CornerRadius = UDim.new(0, 6)
 
 ExecBtn.MouseButton1Click:Connect(function()
     local code = ScriptBox.Text
     if code and #code > 0 then
+        OutputLabel.Text = "Output: Executing..."
         local func, err = loadstring(code)
         if func then
-            local ok, ret = pcall(func)
-            if not ok then
-                warn("Script error: "..tostring(ret))
+            local success, result = pcall(func)
+            if success then
+                OutputLabel.Text = "Output: Script executed successfully!"
+            else
+                OutputLabel.Text = "Output: Error - " .. tostring(result)
             end
         else
-            warn("Loadstring error: "..tostring(err))
+            OutputLabel.Text = "Output: Loadstring Error - " .. tostring(err)
         end
+    else
+        OutputLabel.Text = "Output: No script to execute!"
     end
 end)
 
 ClearBtn.MouseButton1Click:Connect(function()
     ScriptBox.Text = ""
+    OutputLabel.Text = "Output: Ready"
 end)
 
 -- ========== GRID PAGE CONTENT ==========
