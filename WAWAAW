@@ -6230,7 +6230,7 @@ end)
 
 --// 4 Buttons in Roleplay Script
 addMainMenuButton("TRACK ALL MUSCLE T TO OPEN / OFF [3KTG]", function()
---// Player Tracker + NameTag Display | Toggle with T key
+--// Player Tracker + NameTag Display | Toggle with T key (Solara Executor)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -6238,14 +6238,12 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Wait for character and HRP
-repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+repeat wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
 local trackingEnabled = false
 local lines = {}
 local nameTags = {}
 local renderConnection = nil
-local toggleCooldown = false
-local COOLDOWN_TIME = 0.5 -- Prevent spam by adding a 0.5-second cooldown
 
 -- Create ESP (line + name tag) for player
 local function createESP(player)
@@ -6306,115 +6304,75 @@ local function updateESP()
                 line.Size = Vector3.new(0.1, 0.1, distance)
                 line.CFrame = CFrame.new(origin.Position, target.Position) * CFrame.new(0, 0, -distance / 2)
             else
-                -- Remove invalid lines
                 line:Destroy()
                 lines[player] = nil
             end
         else
-            -- Clean up lines for players who left or have no HRP
             line:Destroy()
             lines[player] = nil
+        end
+    end
+    for player, tag in pairs(nameTags) do
+        if not player.Character or not player.Character:FindFirstChild("Head") or not tag.Parent then
+            tag:Destroy()
+            nameTags[player] = nil
         end
     end
 end
 
 -- Clear all ESP
 local function clearESP()
-    for player, line in pairs(lines) do
-        if line then
-            line:Destroy()
-        end
+    for _, line in pairs(lines) do
+        if line then line:Destroy() end
     end
-    for player, tag in pairs(nameTags) do
-        if tag then
-            tag:Destroy()
-        end
+    for _, tag in pairs(nameTags) do
+        if tag then tag:Destroy() end
     end
     lines = {}
     nameTags = {}
+    if renderConnection then
+        renderConnection:Disconnect()
+        renderConnection = nil
+    end
+    print("[Tracker] ESP fully cleared.")
 end
 
 -- Toggle function
 local function toggleESP()
-    if toggleCooldown then return end
-    toggleCooldown = true
-
     trackingEnabled = not trackingEnabled
 
     if trackingEnabled then
-        warn("Tracking: ON")
-
-        -- Apply ESP to all current players
+        print("[Tracker] Tracking: ON")
         for _, player in ipairs(Players:GetPlayers()) do
             createESP(player)
         end
-
-        -- Update every frame
         renderConnection = RunService.RenderStepped:Connect(updateESP)
-
-        -- Track new players
         Players.PlayerAdded:Connect(function(player)
             player.CharacterAdded:Connect(function()
-                if trackingEnabled then
-                    task.wait(1)
-                    createESP(player)
-                end
+                wait(1)
+                createESP(player)
             end)
         end)
-
-        -- Clean up when players leave
-        Players.PlayerRemoving:Connect(function(player)
-            if lines[player] then
-                lines[player]:Destroy()
-                lines[player] = nil
-            end
-            if nameTags[player] then
-                nameTags[player]:Destroy()
-                nameTags[player] = nil
-            end
-        end)
     else
-        warn("Tracking: OFF")
-
-        -- Stop updates and clear
-        if renderConnection then
-            renderConnection:Disconnect()
-            renderConnection = nil
-        end
+        print("[Tracker] Tracking: OFF")
         clearESP()
     end
-
-    -- Reset cooldown
-    task.delay(COOLDOWN_TIME, function()
-        toggleCooldown = false
-    end)
 end
 
 -- Keybind (T)
-UserInputService.InputBegan:Connect(function(input, isProcessed)
-    if isProcessed then return end
-    if input.KeyCode == Enum.KeyCode.T then
-        toggleESP()
-    end
-end)
-
--- Handle local player character reset
-LocalPlayer.CharacterAdded:Connect(function()
-    if trackingEnabled then
-        -- Clear and restart ESP when local player respawns
-        clearESP()
-        if renderConnection then
-            renderConnection:Disconnect()
-            renderConnection = nil
+local success, errorMsg = pcall(function()
+    UserInputService.InputBegan:Connect(function(input, isProcessed)
+        if isProcessed then return end
+        if input.KeyCode == Enum.KeyCode.T then
+            toggleESP()
         end
-        renderConnection = RunService.RenderStepped:Connect(updateESP)
-        for _, player in ipairs(Players:GetPlayers()) do
-            createESP(player)
-        end
-    end
+    end)
 end)
+if not success then
+    print("[Tracker] Error setting up keybind: " .. tostring(errorMsg))
+end
 
-warn("Press [T] to toggle Player Tracker with Name Tags.")
+print("[Tracker] Press [T] to toggle Player Tracker with Name Tags.")
 end)
 
 addMainMenuButton("ESP [3KTG]", function()
