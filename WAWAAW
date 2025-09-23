@@ -3170,13 +3170,13 @@ toggle.MouseButton1Click:Connect(function()
     while isAutoBuying do
         if selectedItem then
             if selectedItem == "Silenced Pistol" then
-                game:GetService("ReplicatedStorage").AntiDupe:FireServer("Silenced Pistol", -0)
+                game:GetService("ReplicatedStorage").MicSystem:FireServer("Silenced Pistol", -0)
                 print("Auto-buying Silenced Pistol")
             elseif selectedItem == "Desert Eagle" then
-                game:GetService("ReplicatedStorage").AntiDupe:FireServer("Desert Eagle", -0)
+                game:GetService("ReplicatedStorage").MicSystem:FireServer("Desert Eagle", -0)
                 print("Auto-buying Desert Eagle")
             elseif selectedItem == "AmmoBox" then
-                game:GetService("ReplicatedStorage").AntiDupe:FireServer("AmmoBox", -0)
+                game:GetService("ReplicatedStorage").MicSystem:FireServer("AmmoBox", -0)
                 print("Auto-buying AmmoBox")
             end
         end
